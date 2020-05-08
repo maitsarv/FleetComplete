@@ -1,0 +1,7 @@
+{
+  "/seeme": {
+    "target": "https://app.ecofleet.com",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
