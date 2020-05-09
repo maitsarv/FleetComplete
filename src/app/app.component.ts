@@ -21,85 +21,119 @@ export interface TimePosition {
   EngineStatus: string;
   timestampDate?: Date;
   Distance: number;
+  speed: number;
 }
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   title = 'FleetComplete';
   apiKey = '';
-  vehicleList: Vehicle[];
+  vehicleList: Vehicle[] = [];
   activeVehicle: Vehicle = null;
   activeFetch = false;
   objectDateFilter = new Date();
 
   activeObjectList: TimePosition[];
+  objectDisplayInfo = {
+    activeObjectStops: [],
+    traveledDistance: null,
+    calcDistance: null
+  };
 
   constructor(private apiService: ApiCommunicatorService, private mapDataService: MapDataService) {
 
   }
 
-  fetchUnits(key: string) {
-    if (this.activeFetch === true) { return; }
-    this.apiKey = key;
+  fetchUnits(akey: string) {
+    if (this.activeFetch === true) { return;}
+    this.apiKey = akey;
     this.mapDataService.clearVehicles();
-    this.mapDataService.clearVehicleTracks();
+    this.clearVehicleInfo();
     this.activeVehicle = null;
     this.vehicleList = [];
     if (this.apiKey !== '') {
-      const testData = '{"status":0,"response":[{"objectId":187360,"orgId":25524,"timestamp":"2020-05-08 11:35:16+0300","latitude":58.160005,"longitude":26.93306,"speed":18,"enginestate":1,"gpsstate":1,"direction":58,"fuel":null,"power":28.66,"CANDistance":null,"available":null,"driverId":null,"driverName":null,"driverKey":null,"driverPhone":null,"driverStatuses":null,"driverIsOnDuty":null,"dutyTags":null,"pairedObjectId":null,"pairedObjectName":null,"lastEngineOnTime":"2020-05-08 11:35:16","inPrivateZone":false,"offWorkSchedule":null,"tripPurposeDinSet":null,"tcoData":null,"tcoCardIsPresent":false,"address":"Puhastuse, Leevij\u00f5e k\u00fcla, P\u00f5lva vald, P\u00f5lvamaa, EE","addressArea":null,"displayColor":null,"employeeId":null,"enforcePrivacyFilter":null,"EVStateOfCharge":null,"EVDistanceRemaining":null,"customValues":[],"objectName":"2832UB","externalId":null,"plate":"2832UB"},{"objectId":187286,"orgId":25524,"timestamp":"2020-05-08 11:10:41+0300","latitude":58.351762,"longitude":26.738953,"speed":0,"enginestate":0,"gpsstate":1,"direction":87,"fuel":null,"power":28.04,"CANDistance":null,"available":null,"driverId":null,"driverName":null,"driverKey":null,"driverPhone":null,"driverStatuses":null,"driverIsOnDuty":null,"dutyTags":null,"pairedObjectId":null,"pairedObjectName":null,"lastEngineOnTime":"2020-05-08 11:10:20","inPrivateZone":false,"offWorkSchedule":null,"tripPurposeDinSet":null,"tcoData":null,"tcoCardIsPresent":false,"address":"Sepa 26, 50104 Tartu, Eesti","addressArea":null,"displayColor":null,"employeeId":null,"enforcePrivacyFilter":null,"EVStateOfCharge":null,"EVDistanceRemaining":null,"customValues":[],"objectName":"1141TU","externalId":null,"plate":"1141TU"},{"objectId":187361,"orgId":25524,"timestamp":"2020-05-08 11:34:46+0300","latitude":58.328397,"longitude":26.74513,"speed":86,"enginestate":1,"gpsstate":1,"direction":282,"fuel":null,"power":28.48,"CANDistance":"60598.275","available":null,"driverId":null,"driverName":null,"driverKey":null,"driverPhone":null,"driverStatuses":null,"driverIsOnDuty":null,"dutyTags":null,"pairedObjectId":null,"pairedObjectName":null,"lastEngineOnTime":"2020-05-08 11:34:46","inPrivateZone":false,"offWorkSchedule":null,"tripPurposeDinSet":null,"tcoData":null,"tcoCardIsPresent":false,"address":"Sahkari, Reola k\u00fcla, Kambja vald, Tartumaa, EE","addressArea":null,"displayColor":null,"employeeId":null,"enforcePrivacyFilter":null,"EVStateOfCharge":null,"EVDistanceRemaining":null,"customValues":[],"GreenDrivingType":2,"CANRPM":1262,"GreenDrivingValue":20,"objectName":"2943RT","externalId":null,"plate":"2943RT"}]}';
-      const res = JSON.parse(testData);
-      this.activeFetch = false;
-      const response: Array<Vehicle> = res.response;
-      for (const item of response){
-        item.timestampDate = new Date(item.timestamp);
-        this.vehicleList.push(item);
-      }
-      this.mapDataService.positionVehicles(this.vehicleList);
-      /*
       this.activeFetch = true;
       this.apiService.getLastData(this.apiKey).subscribe((res) => {
-        this.activeFetch = false;
-        const response: Array<Vehicle> = res.response;
-        for (const item of response){
-          item.timestampDate = new Date(item.timestamp);
-          this.vehicleList.push(item);
+          this.activeFetch = false;
+          const response: Array<Vehicle> = res.response;
+          for (const item of response){
+            item.timestampDate = new Date(item.timestamp);
+            this.vehicleList.push(item);
+          }
+          this.mapDataService.positionVehicles(this.vehicleList);
+        },
+        (error) => {
+          this.activeFetch = false;
+          console.error(error);
         }
-      });
-      */
+      );
     }
   }
 
   chooseVehicle(v) {
+    if (this.activeVehicle !== null && this.activeVehicle.objectId !== v.objectId){
+      this.clearVehicleInfo();
+    }
     this.activeVehicle = v;
+    this.mapDataService.activateVehicle(v);
   }
 
   objectDateChanged(date: Date){
     this.objectDateFilter = date;
   }
 
+  private clearVehicleInfo(){
+    // tslint:disable-next-line:forin
+    for (const k in this.objectDisplayInfo){
+      this.objectDisplayInfo[k] = '';
+    }
+    this.mapDataService.clearVehicleTracks();
+  }
+
   calcDistance() {
+    this.clearVehicleInfo();
     if (this.activeVehicle) {
       this.activeFetch = true;
       this.activeObjectList = [];
       this.apiService.getRawData(this.apiKey, this.activeVehicle.objectId, this.objectDateFilter).subscribe((res) => {
         this.activeFetch = false;
         this.activeObjectList = [];
+        const stops: number[] = [];
         const response: Array<TimePosition> = res.response;
-        let previousDistance = -1;
-        for (const item of response){
-          item.timestampDate = new Date(item.timestamp);
-          if (previousDistance === item.Distance) {
-            continue;
+        if (response.length > 0){
+          let previousTime = new Date(response[0].timestamp);
+          let previousDistance = -1;
+          let num = 0;
+          for (const item of response){
+            if (previousDistance === item.Distance) {
+              continue;
+            }
+            item.timestampDate = new Date(item.timestamp);
+            // if time difference between movements is over 5 minutes
+            if (item.timestampDate.valueOf() - previousTime.valueOf() > 300000) {
+              stops.push(num);
+            }
+            num++;
+            this.activeObjectList.push(item);
+            previousDistance = item.Distance;
+            previousTime = item.timestampDate;
           }
-          this.activeObjectList.push(item);
-          previousDistance = item.Distance;
+          this.objectDisplayInfo.activeObjectStops = stops;
+          this.objectDisplayInfo.traveledDistance =
+            (this.activeObjectList[this.activeObjectList.length - 1].Distance - this.activeObjectList[0].Distance).toFixed(2);
         }
-        this.mapDataService.addVehicleTracks(this.activeObjectList);
-      });
+
+        this.mapDataService.addVehicleTracks(this.activeObjectList, stops);
+      },
+      error => {
+        this.activeFetch = false;
+        console.error(error);
+      }
+    );
     }
   }
 

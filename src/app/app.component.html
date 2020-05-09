@@ -32,6 +32,13 @@
     flex: 1;
   }
 
+  .msg-not{
+    color: #686868;
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+  }
+
   .fc-container{
     max-width: 1480px;
     margin-left: auto;
@@ -69,18 +76,27 @@
     //color: #FFFFFF;
   }
 
-  svg#rocket-smoke {
-    height: calc(160vh);
+  div.rocket-back{
     position: fixed;
-    top: -10%;
+    top: 0;
+    left: 10%;
+    height: 96vh;
+    overflow: hidden;
+    z-index: -8;
+  }
+
+  svg#rocket-smoke {
+    height: 120vh;
+    position: relative;
+    top: 0;
     left: 10%;
     z-index: -10;
     transform: rotate(10deg);
   }
   svg#rocket-smoke2 {
-    height: calc(160vh);
-    position: fixed;
-    top: -10%;
+    height: 120vh;
+    position: absolute;
+    top: 0;
     left: 12%;
     z-index: -20;
     transform: rotate(10deg);
@@ -123,7 +139,8 @@
 
   .main-panel>.list-view{
     max-width: 400px;
-    min-width: 200px;
+    min-width: 240px;
+    width: 20vw;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
@@ -140,28 +157,38 @@
     overflow-y: auto;
     margin-bottom: 12px;
   }
-  .main-panel .vhl-list table{
+  .main-panel .list-view table{
     width: 100%;
   }
-  .main-panel .vhl-list table th,
-  .main-panel .vhl-list table td{
+  .main-panel .list-view table th,
+  .main-panel .list-view table td{
     padding: 6px 4px;
   }
 
   .main-panel .vhl-list table tbody tr:hover{
     cursor: pointer;
   }
-  .main-panel .vhl-list table tbody tr:nth-child(odd){
+  .main-panel .list-view table tbody tr:nth-child(odd){
     background-color: rgba(0,0,0,0.2);
   }
   .main-panel .vhl-list table tbody tr.active{
     font-weight: 500;
   }
 
+  .main-panel .trip-calc table {
+    margin-top: 12px;
+  }
+  .main-panel .trip-calc table tr td{
+    padding: 8px 6px;
+  }
+  .main-panel .trip-calc table tr td:nth-child(2){
+    min-width: 42px;
+  }
+
   .main-panel .trip-calc{
     height: 240px;
     height: 20vh;
-    min-height: 200px;
+    min-height: 180px;
     position: relative;
     overflow: hidden;
   }
@@ -178,9 +205,33 @@
     max-width: 120px;
   }
 
+  @media screen and (max-width: 1420px) {
+    #map{
+      width: 100%;
+      max-width: 68vw;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    #map{
+      width: 100%;
+      max-width: 98vw;
+    }
+    .main-panel{
+      align-items: center;
+      justify-content: center;
+    }
+    .main-panel>.list-view{
+      width: 98vw;
+    }
+  }
+
 
   @media screen and (max-width: 767px) {
 
+    svg#rocket-smoke2 {
+      right: 130px;
+    }
     svg#rocket-smoke {
       right: 120px;
       transform: rotate(-5deg);
@@ -188,6 +239,7 @@
   }
 
   @media screen and (max-width: 575px) {
+    svg#rocket-smoke2,
     svg#rocket-smoke {
       display: none;
       visibility: hidden;
@@ -208,12 +260,14 @@
   </div>
 </div>
 
-<svg id="rocket-smoke" alt="Rocket Ship Smoke" xmlns="http://www.w3.org/2000/svg" width="516.119" height="1083.632" viewBox="0 0 516.119 1083.632">
+<div class="rocket-back">
+<svg id="rocket-smoke" alt="Rocket Ship Smoke" xmlns="http://www.w3.org/2000/svg" width="516.119" height="1083.632" viewBox="0 100 426.119 943.632">
   <path id="Path_40" data-name="Path 40" d="M644.6,141S143.02,215.537,147.049,870.207s342.774,201.755,342.774,201.755S404.659,847.213,388.815,762.2c-27.116-145.51-11.551-384.124,271.9-609.1C671.15,139.365,644.6,141,644.6,141Z" transform="translate(-147.025 -140.939)" fill="#f5f5f5"/>
 </svg>
-<svg id="rocket-smoke2" alt="Rocket Ship Smoke" xmlns="http://www.w3.org/2000/svg" width="516.119" height="1083.632" viewBox="0 0 516.119 1083.632">
+<svg id="rocket-smoke2" alt="Rocket Ship Smoke" xmlns="http://www.w3.org/2000/svg" width="516.119" height="1083.632" viewBox="0 100 426.119 943.632">
   <path id="Path_40" data-name="Path 40" d="M644.6,141S143.02,215.537,147.049,870.207s342.774,201.755,342.774,201.755S404.659,847.213,388.815,762.2c-27.116-145.51-11.551-384.124,271.9-609.1C671.15,139.365,644.6,141,644.6,141Z" transform="translate(-147.025 -140.939)" fill="#f0f3f6"/>
 </svg>
+</div>
 <div class="content fc-container" role="main">
 
   <div class="main-panel">
@@ -229,12 +283,25 @@
           </tr>
           </tbody>
         </table>
+        <div class="msg-not" *ngIf="vehicleList.length === 0 && activeFetch=== false" style="margin-top: 10vh">
+          <span i18n>(No vehicles found)</span>
+        </div>
+        <app-loading *ngIf="activeFetch=== true" style="margin-top: 10vh"></app-loading>
       </div>
       <div class="trip-calc">
         <div class="date-filter-row">
           <label i18n>Date</label>
           <app-date-picker-past (dateChanged)="objectDateChanged($event)"></app-date-picker-past>
           <button class="fc-button" i18n="vehicle key go| Request detailed Vehicle info" (click)="calcDistance()" [disabled]="activeVehicle === null">Go</button>
+        </div>
+        <div class="trip-info">
+          <table>
+            <tbody>
+            <tr><td class="tx-left" i18n>Total Distance</td><td class="tx-right">{{objectDisplayInfo.traveledDistance}}</td></tr>
+            <tr><td class="tx-left" i18n>Number of Stops</td><td class="tx-right">{{objectDisplayInfo.activeObjectStops.length}}</td></tr>
+            <tr><td class="tx-left" i18n>Calculated Distance</td><td class="tx-right">{{objectDisplayInfo.calcDistance}}</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

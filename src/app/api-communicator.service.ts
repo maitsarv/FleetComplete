@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {Observable} from 'rxjs';
 import {TimePosition, Vehicle} from './app.component';
 
+/*
+ Service that communicates with Fleet Complete API
+ */
 
 interface LastData<T> {
   status: number;
@@ -23,11 +25,11 @@ export class ApiCommunicatorService {
     return this.http.get<LastData<Vehicle>>(this.apiUrl + 'getLastData?json&key=' + encodeURIComponent(key));
   }
 
-  getRawData(key: string, object: string, date: Date){
+  getRawData(apiKey: string, object: string, date: Date){
     const fromDate: string = date.toISOString().substring(0, 10);
     const toDate: string = new Date(date.setDate(date.getDate() + 1)).toISOString().substring(0, 10);
     const paramsObj = {
-      key,
+      key: apiKey,
       begTimestamp : fromDate,
       endTimestamp : toDate,
       objectId : object

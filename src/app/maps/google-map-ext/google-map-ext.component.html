@@ -2,6 +2,7 @@
               width="100%"
               [zoom]="zoom"
               [center]="center">
+
   <map-marker
     *ngFor="let marker of markers"
     [position]="marker.position"
@@ -10,4 +11,7 @@
     [options]="marker.options"
   >
   </map-marker>
+  <map-polyline *ngFor="let poly of polylines"
+                [path]="poly.path">
+  </map-polyline>
 </google-map>
