@@ -1,13 +1,21 @@
 import {Component, OnInit} from '@angular/core';
-import {Map as OsMap, View, Feature} from 'ol';
+import {Map as OsMap, View} from 'ol';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import VectorSource from 'ol/source/Vector';
-import {Point as GeomPoint} from 'ol/geom';
-import {fromLonLat} from 'ol/proj';
 import {defaults as defaultControls} from 'ol/control';
 import OSM from 'ol/source/OSM';
 import 'ol/interaction';
+import {MapDataService} from '../../map-data.service';
+import {Subscription} from 'rxjs';
 
+interface MapServiceSubscriptions {
+  addVehicles: Subscription;
+  clearVehicles: Subscription;
+  activateVehicle: Subscription;
+  addVehicleTrack: Subscription;
+  clearVehicleTrack: Subscription;
+  markerChanges: Subscription;
+}
 
 @Component({
   selector: 'app-open-street-map',
@@ -19,15 +27,54 @@ export class OpenStreetMapComponent implements OnInit {
   map: OsMap;
   markers;
 
-  constructor() {
+  center: object;
+  subscription: MapServiceSubscriptions = {
+    addVehicles: null,
+    clearVehicles: null,
+    activateVehicle: null,
+    addVehicleTrack: null,
+    clearVehicleTrack: null,
+    markerChanges: null,
+  };
 
+  constructor(private mapData: MapDataService) {
+    this.center = {
+      lat: 58.370568,
+      lng: 26.715893,
+    };
+
+    this.subscription.addVehicles = mapData.vehiclesPositioned$.subscribe(
+      vehs => {
+        for (const v of vehs){
+          this.addMarker(v[1].objectName, v[1].latitude, v[1].longitude);
+        }
+      });
+
+    this.subscription.clearVehicles = mapData.vehiclesCleared$.subscribe(
+      () => {
+
+      });
+
+    this.subscription.addVehicles = mapData.vehicleTrack$.subscribe(
+      tracks => {
+
+      });
+    this.subscription.clearVehicleTrack = mapData.vehicleTracksCleared$.subscribe(
+      () => {
+
+      });
+
+    this.subscription.activateVehicle = mapData.vehiclesActivated$.subscribe(
+      (veh) => {
+        this.center = {
+          lat: veh.latitude,
+          lng: veh.longitude,
+        };
+      });
   }
 
   addMarker(label: string, lon: number, lat: number){
-    const feature = new Feature({
-      geometry: new GeomPoint(fromLonLat([lon, lat]))
-    });
-    this.markers.getSource().addFeature(feature);
+
   }
 
   ngOnInit(): void {
