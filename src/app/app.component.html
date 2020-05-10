@@ -123,10 +123,20 @@
     border-radius: 3px;
     outline:none;
   }
+  button.fc-button:hover{
+    cursor: pointer;
+  }
   button.fc-button:focus {
     border: 1px dashed #0ca9fa;
     outline:none;
     text-decoration: none;
+  }
+
+  button.fc-button:disabled{
+    opacity: 0.7;
+  }
+  button.fc-button:disabled:hover{
+    cursor: not-allowed;
   }
 
   .main-panel{
@@ -288,12 +298,12 @@
           <tr><th class="tx-left" i18n>Name</th><th class="tx-right" i18n>Speed</th><th class="tx-right" i18n>Last Update</th></tr>
           </thead>
           <tbody>
-          <tr *ngFor="let vel of vehicleList" [ngClass]="{'active': activeVehicle == vel}" (click)="chooseVehicle(vel)">
-            <td class="tx-left">{{vel.objectName}}</td><td class="tx-right">{{vel.speed}}</td><td class="tx-right">{{vel.timestamp | timeAgo}}</td>
+          <tr *ngFor="let vel of vehicleList | keyvalue" [ngClass]="{'active': activeVehicle == vel.value}" (click)="chooseVehicle(vel.value)">
+            <td class="tx-left">{{vel.value.objectName}}</td><td class="tx-right">{{vel.value.speed}}</td><td class="tx-right">{{vel.value.timestamp | timeAgo}}</td>
           </tr>
           </tbody>
         </table>
-        <div class="msg-not" *ngIf="vehicleList.length === 0 && activeFetch=== false" style="margin-top: 10vh">
+        <div class="msg-not" *ngIf="vehicleList.size === 0 && activeFetch=== false" style="margin-top: 10vh">
           <span i18n>(No vehicles found)</span>
         </div>
         <app-loading *ngIf="activeFetch=== true" style="margin-top: 10vh"></app-loading>

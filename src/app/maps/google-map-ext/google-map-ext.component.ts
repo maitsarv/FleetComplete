@@ -36,7 +36,7 @@ interface MapServiceSubscriptions {
 })
 export class GoogleMapExtComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  markers: CurrentMapMarker[] = [];
+  markers: Map<string, CurrentMapMarker> = new Map<string, CurrentMapMarker>();
   stopMarkers: CurrentMapMarker[] = [];
   @ViewChildren(MapMarker) markerElements: QueryList<MapMarker>;
   markerCluster = null;
@@ -70,14 +70,14 @@ export class GoogleMapExtComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.addVehicles = mapData.vehiclesPositioned$.subscribe(
       vehs => {
         for (const v of vehs){
-          this.addMarker(v.objectName, [v.latitude, v.longitude]);
+          this.addMarker(v[1].objectName, [v[1].latitude, v[1].longitude]);
         }
       });
 
     this.subscription.clearVehicles = mapData.vehiclesCleared$.subscribe(
       () => {
         if (this.markerCluster !== null) { this.markerCluster.clearMarkers(); }
-        this.markers = [];
+        this.markers = new Map<string, CurrentMapMarker>();
         this.stopMarkers = [];
       });
 
@@ -137,7 +137,15 @@ export class GoogleMapExtComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   addMarker(label: string, position: [number, number]) {
-    this.markers.push({
+    let exist = this.markers.get(label);
+    if (exist) {
+      exist.position = {
+        lat: position[0],
+        lng: position[1],
+      };
+      return;
+    }
+    this.markers.set(label,{
       position: {
         lat: position[0],
         lng: position[1],

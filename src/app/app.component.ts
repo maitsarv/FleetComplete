@@ -32,9 +32,10 @@ export interface TimePosition {
 export class AppComponent {
   title = 'FleetComplete';
   apiKey = '';
-  vehicleList: Vehicle[] = [];
+  vehicleList: Map<string ,Vehicle> = new Map<string, Vehicle>();
   activeVehicle: Vehicle = null;
   activeFetch = false;
+  activeFetchLoop = null;
   objectDateFilter = new Date();
   stopTimeThreshold = 120000;
   stopAllowedDistance = 0.008;
@@ -51,13 +52,32 @@ export class AppComponent {
     })
   }
 
+  fetchListFromApi(){
+    this.apiService.getLastData(this.apiKey).subscribe((res) => {
+        if (this.activeFetch === true) return;
+        const response: Array<Vehicle> = res.response;
+        for (const item of response){
+          if(this.vehicleList.get(item.objectId)) {
+            this.vehicleList.set(item.objectId,item);
+          }
+          console.log("update");
+        }
+        this.mapDataService.positionVehicles(this.vehicleList);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
   fetchUnits(akey: string) {
     if (this.activeFetch === true) { return;}
+    if (this.activeFetchLoop !== null) clearInterval(this.activeFetchLoop);
     this.apiKey = akey;
     this.mapDataService.clearVehicles();
     this.clearVehicleInfo();
     this.activeVehicle = null;
-    this.vehicleList = [];
+    this.vehicleList = new Map<string, Vehicle>();
     if (this.apiKey !== '') {
       this.activeFetch = true;
       this.apiService.getLastData(this.apiKey).subscribe((res) => {
@@ -65,12 +85,18 @@ export class AppComponent {
           const response: Array<Vehicle> = res.response;
           for (const item of response){
             item.timestampDate = new Date(item.timestamp);
-            this.vehicleList.push(item);
+            this.vehicleList.set(item.objectId,item);
           }
           this.mapDataService.positionVehicles(this.vehicleList);
+          let fetchList = this.fetchListFromApi;
+          let context = this;
+          this.activeFetchLoop = setInterval(function() {
+            fetchList.call(context);
+          },30000);
         },
         (error) => {
           this.activeFetch = false;
+          this.apiKey == '';
           console.error(error);
         }
       );

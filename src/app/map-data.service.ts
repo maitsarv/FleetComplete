@@ -13,7 +13,7 @@ import {strict} from 'assert';
 export class MapDataService {
 
   // Observable string sources
-  private vehiclePositionSource = new Subject<Vehicle[]>();
+  private vehiclePositionSource = new Subject<Map<string, Vehicle>>();
   private vehiclesClearedSource = new Subject();
   private activeVehicleSource = new Subject<Vehicle>();
   private vehicleTrackSource = new Subject<[TimePosition[], number[]]>();
@@ -31,7 +31,7 @@ export class MapDataService {
   distanceCalculated$ = this.calculatedDistanceSource.asObservable();
 
   // Service message commands
-  positionVehicles(vehicles: Vehicle[]) {
+  positionVehicles(vehicles: Map<string, Vehicle>) {
     this.vehiclePositionSource.next(vehicles);
   }
 

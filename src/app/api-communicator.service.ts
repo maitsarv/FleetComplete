@@ -26,8 +26,13 @@ export class ApiCommunicatorService {
   }
 
   getRawData(apiKey: string, object: string, date: Date){
-    const fromDate: string = date.toISOString().substring(0, 10);
-    const toDate: string = new Date(date.setDate(date.getDate() + 1)).toISOString().substring(0, 10);
+    let currentTimeZoneDateStr = (date: Date) => {
+      var timeOffsetInMS:number = date.getTimezoneOffset() * 60000;
+      date.setTime(date.getTime() - timeOffsetInMS);
+      return date.toISOString().substring(0, 10);
+    };
+    const fromDate: string = currentTimeZoneDateStr(date);
+    const toDate: string = currentTimeZoneDateStr(new Date(date.setDate(date.getDate() + 1)));
     const paramsObj = {
       key: apiKey,
       begTimestamp : fromDate,
