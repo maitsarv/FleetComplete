@@ -20,7 +20,8 @@ export interface TimePosition {
   Latitude: number;
   EngineStatus: string;
   timestampDate?: Date;
-  Distance: number;
+  Distance?: number;
+  DeltaDistance?: number;
   speed: number;
 }
 
@@ -138,12 +139,23 @@ export class AppComponent {
           let previousDistance = -1;
           let previousStopDistance = -1;
           let num = 0;
+          let totalT = 0;
           for (const item of response){
-            if(item.Distance === undefined || item.timestamp === undefined) continue;
-            if (previousDistance === item.Distance) {
-              continue;
-            }
+            if(item.timestamp === undefined) continue;
             item.timestampDate = new Date(item.timestamp);
+
+            if (item.Distance === undefined) {
+              if(item.DeltaDistance === undefined || item.DeltaDistance === null) {
+                continue;
+              }
+              totalT += item.DeltaDistance;
+              item.Distance = totalT;
+            } else {
+              if (previousDistance === item.Distance) {
+                continue;
+              }
+            }
+
             // if time difference between movements is over x minutes
             if (item.timestampDate.valueOf() - previousTime.valueOf() > this.stopTimeThreshold && item.Distance - previousStopDistance > this.stopAllowedDistance) {
               stops.push(num);
@@ -158,6 +170,8 @@ export class AppComponent {
             this.objectDisplayInfo.activeObjectStops = stops;
             this.objectDisplayInfo.traveledDistance =
               (this.activeObjectList[this.activeObjectList.length - 1].Distance - this.activeObjectList[0].Distance).toFixed(2);
+          } else {
+            if(totalT > 0)this.objectDisplayInfo.traveledDistance = totalT.toFixed(2);
           }
         }
         this.mapDataService.addVehicleTracks(this.activeObjectList, stops);
