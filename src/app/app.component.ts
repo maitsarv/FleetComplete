@@ -161,7 +161,6 @@ export class AppComponent {
               (this.activeObjectList[this.activeObjectList.length - 1].Distance - this.activeObjectList[0].Distance).toFixed(2);
           }
         }
-        console.log(this.activeObjectList, stops);
         this.mapDataService.addVehicleTracks(this.activeObjectList, stops);
       },
       error => {

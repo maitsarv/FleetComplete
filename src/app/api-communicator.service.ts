@@ -26,6 +26,7 @@ export class ApiCommunicatorService {
   }
 
   getRawData(apiKey: string, object: string, date: Date){
+    date = new Date(date);
     let currentTimeZoneDateStr = (date: Date) => {
       var timeOffsetInMS:number = date.getTimezoneOffset() * 60000;
       date.setTime(date.getTime() - timeOffsetInMS);
