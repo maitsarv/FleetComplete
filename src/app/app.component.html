@@ -164,6 +164,16 @@
   .main-panel .list-view table td{
     padding: 6px 4px;
   }
+  .main-panel .list-view{
+    position: relative;
+  }
+  .main-panel .list-view table thead tr:first-child{
+    position: sticky;
+    top: 0;
+    background-color: #f2f2f2;
+  }
+
+
 
   .main-panel .vhl-list table tbody tr:hover{
     cursor: pointer;
@@ -297,9 +307,18 @@
         <div class="trip-info">
           <table>
             <tbody>
-            <tr><td class="tx-left" i18n>Total Distance</td><td class="tx-right">{{objectDisplayInfo.traveledDistance}}</td></tr>
+            <tr><td class="tx-left" i18n>Total Distance</td><td class="tx-right">
+              {{objectDisplayInfo.traveledDistance}} <span *ngIf="objectDisplayInfo.traveledDistance !== null&& objectDisplayInfo.traveledDistance !== ''" i18n="kilometer">km</span>
+            </td></tr>
             <tr><td class="tx-left" i18n>Number of Stops</td><td class="tx-right">{{objectDisplayInfo.activeObjectStops.length}}</td></tr>
-            <tr><td class="tx-left" i18n>Calculated Distance</td><td class="tx-right">{{objectDisplayInfo.calcDistance}}</td></tr>
+            <tr><td class="tx-left" i18n>Calculated Distance</td><td class="tx-right">{{objectDisplayInfo.calcDistance}}
+              <div [ngSwitch]="objectDisplayInfo.calcDistance" style="display: inline-block">
+                <app-loading *ngSwitchCase="null"></app-loading>
+                <span *ngSwitchCase="'-'"></span>
+                <span *ngSwitchCase="''"></span>
+                <span *ngSwitchDefault>km</span>
+              </div>
+            </td></tr>
             </tbody>
           </table>
         </div>
@@ -312,5 +331,3 @@
   </div>
 
 </div>
-
-

@@ -11,6 +11,14 @@
     [options]="marker.options"
   >
   </map-marker>
+  <map-marker
+    *ngFor="let marker of stopMarkers"
+    [position]="marker.position"
+    [label]="marker.label"
+    [title]="marker.title"
+    [options]="marker.options"
+  >
+  </map-marker>
   <map-polyline *ngFor="let poly of polylines"
                 [path]="poly.path">
   </map-polyline>

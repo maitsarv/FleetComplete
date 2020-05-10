@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import {TimePosition, Vehicle} from './app.component';
+import {strict} from 'assert';
 
 /*
  Service that communicates with Maps API
@@ -18,12 +19,16 @@ export class MapDataService {
   private vehicleTrackSource = new Subject<[TimePosition[], number[]]>();
   private vehicleTrackClearSource = new Subject();
 
+  private calculatedDistanceSource = new Subject<string>();
+
   // Observable string streams
   vehiclesPositioned$ = this.vehiclePositionSource.asObservable();
   vehiclesCleared$ = this.vehiclesClearedSource.asObservable();
   vehiclesActivated$ = this.activeVehicleSource.asObservable();
   vehicleTrack$ = this.vehicleTrackSource.asObservable();
   vehicleTracksCleared$ = this.vehicleTrackClearSource.asObservable();
+
+  distanceCalculated$ = this.calculatedDistanceSource.asObservable();
 
   // Service message commands
   positionVehicles(vehicles: Vehicle[]) {
@@ -44,5 +49,9 @@ export class MapDataService {
 
   clearVehicleTracks() {
     this.vehicleTrackClearSource.next();
+  }
+
+  sendCalculatedDistance(dist: string) {
+    this.calculatedDistanceSource.next(dist);
   }
 }
