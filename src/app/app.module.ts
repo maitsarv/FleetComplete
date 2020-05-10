@@ -27,7 +27,7 @@ import {AppConfigService} from './app-config.service';
     MatNativeDateModule,
     BrowserAnimationsModule,
     MapsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [
     {

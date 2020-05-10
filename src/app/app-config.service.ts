@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 
 @Injectable({
@@ -11,7 +11,10 @@ export class AppConfigService {
   constructor(private http: HttpClient) { }
 
   loadAppConfig() {
-    return this.http.get('/assets/config.json')
+    let href = '';
+    let base = document.querySelector("base");
+    if(base !== null) href = base.href
+    return this.http.get(href + 'assets/config.json')
       .toPromise()
       .then(data => {
         this.appConfig = data;
