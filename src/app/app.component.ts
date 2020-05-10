@@ -60,7 +60,6 @@ export class AppComponent {
           if(this.vehicleList.get(item.objectId)) {
             this.vehicleList.set(item.objectId,item);
           }
-          console.log("update");
         }
         this.mapDataService.positionVehicles(this.vehicleList);
       },
