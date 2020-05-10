@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {TimePosition, Vehicle} from './app.component';
+import {AppConfigService} from './app-config.service';
 
 /*
  Service that communicates with Fleet Complete API
@@ -16,10 +17,12 @@ interface LastData<T> {
 })
 export class ApiCommunicatorService {
 
-  apiUrl = 'https://localhost:4200/seeme/Api/Vehicles/';
+  apiUrl = '';
   requestOptions = {observe: 'body', responseType: 'json'};
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, appConfigService: AppConfigService) {
+    this.apiUrl = appConfigService.apiBaseUrl;
+  }
 
   getLastData(key: string) {
     return this.http.get<LastData<Vehicle>>(this.apiUrl + 'getLastData?json&key=' + encodeURIComponent(key));
